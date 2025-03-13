@@ -1,0 +1,111 @@
+stages:
+  - build
+  - staging
+  - production
+
+variables:
+  BUILD_IMAGE: 'node:18'
+  GROUP_NAME: aika
+  APP_NAME: admin
+  PREPARE_CMD: yarn install #安装依赖包的命令
+  VIEW_DEP: npm ls #查看按照的依赖版本
+  DIST_PATH: dist #打包结果的路径
+
+##------------- staging阶段 -------------
+build_stage:
+  stage: build
+  image: $BUILD_IMAGE
+  variables:
+    CI: 'true'
+    BUILD_CMD: yarn build:staging #打包的命令
+  script:
+    - echo $PREPARE_CMD
+    - $PREPARE_CMD
+    - echo $VIEW_DEP
+    - $VIEW_DEP
+    - echo $BUILD_CMD
+    - $BUILD_CMD
+  artifacts:
+    paths:
+      - $DIST_PATH/
+    expire_in: 2 hours
+  cache:
+    paths:
+      - node_modules/
+      - $DIST_PATH/
+  #  when: manual
+  only:
+    # - master
+    - develop
+  tags:
+    - aika_runner
+
+stage:
+  stage: staging
+  script:
+    - pwd
+    - rm -rf _dist.d && cp -r $DIST_PATH _dist.d
+    - docker compose -p $CI_JOB_NAME-$GROUP_NAME-$APP_NAME -f docker/docker-staging-compose.yml up -d --build
+    # - docker stack up $CI_JOB_NAME-$GROUP_NAME-$APP_NAME -c docker/docker-staging-compose.yml -d --build
+  environment:
+    name: $CI_JOB_NAME
+    # url: https://$GROUP_NAME-$APP_NAME.parsec.com.cn
+    url: https://admin-test.aikavision.com
+  dependencies:
+    - build_stage
+  #  when: manual
+  only:
+    # - master
+    - develop
+  tags:
+    - aika_runner #runner名称
+
+##------------- production阶段 -------------
+build_production:
+  stage: build
+  image: $BUILD_IMAGE
+  variables:
+    CI: 'true'
+    BUILD_CMD: yarn build:production #打包的命令
+  script:
+    - echo $PREPARE_CMD
+    - $PREPARE_CMD
+    - echo $VIEW_DEP
+    - $VIEW_DEP
+    - echo $BUILD_CMD
+    - $BUILD_CMD
+  artifacts:
+    paths:
+      - $DIST_PATH/
+    expire_in: 2 hours
+  cache:
+    paths:
+      - node_modules/
+      - $DIST_PATH/
+  #  when: manual
+  only:
+    - master
+    # - develop
+  tags:
+    # - aika_runner
+    - aika_runner
+
+production:
+  stage: production
+  script:
+    - pwd
+    - rm -rf _dist.d && cp -r $DIST_PATH _dist.d
+    - docker compose -p $CI_JOB_NAME-$GROUP_NAME-$APP_NAME -f docker/docker-compose.yml up -d --build
+    # - docker stack up $CI_JOB_NAME-$GROUP_NAME-$APP_NAME -c docker/docker-staging-compose.yml -d --build
+  environment:
+    name: $CI_JOB_NAME
+    # url: https://$GROUP_NAME-$APP_NAME.parsec.com.cn
+    url: https://admin.aikavision.com
+  dependencies:
+    - build_production
+  #  when: manual
+  only:
+    - master
+    # - develop
+  tags:
+    - aika_runner #runner名称
