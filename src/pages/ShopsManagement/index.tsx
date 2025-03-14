@@ -35,12 +35,8 @@ export default function ShopsPage() {
   const {run:toGetShopList}=useRequest(getShops,{
     manual:true,
   })
-  const {run:toCreateShop}=useRequest(postCreateShop,{
-    manual:true,
-  })
-  const {run:toEditShop}=useRequest(putEditShops,{
-    manual:true,
-  })
+ 
+ 
 
   const actionRef = React.useRef<ActionType>();
 
@@ -62,26 +58,32 @@ export default function ShopsPage() {
     try {
       const values = await form.validateFields();
       if (editingShop) {
-        // await http.put(`/v1/shops/${editingShop.id}`, values);
-        toEditShop({id:editingShop.id,...values}).then((res)=>{
-          if (res.code !== 0) {
+        
+        putEditShops({id:editingShop.id,...values}).then((res)=>{
+          if (res.code === 0) {
+            message.success('更新成功');
+            actionRef.current?.reload();
+          }else{
             message.error('更新失败');
-            return;
           }
-          message.success('更新成功');
+          
         }).catch(()=>{
           message.error('更新失败');
         })
-       
-        
       } else {
-        // await http.post('/v1/shops', values);
-        toCreateShop(values)
-        message.success('创建成功');
+        postCreateShop(values).then((res)=>{
+          if (res.code === 0) {
+            message.success('创建成功');
+            actionRef.current?.reload();
+          }else{
+            message.error('创建失败');
+          }
+        }).catch(()=>{
+          message.error('创建失败');
+        })
       }
       setModalVisible(false);
-      // 刷新表格
-      actionRef.current?.reload();
+      
     } catch (error) {
       console.error('提交失败:', error);
     }
@@ -158,9 +160,6 @@ export default function ShopsPage() {
         actionRef={actionRef}
         columns={columns}
         request={async (params) => {
-          // const response = await http.get('/v1/shops', { params });
-          // console.log(response);
-
           const {
             data: { list, total },
           } = await getShops({
