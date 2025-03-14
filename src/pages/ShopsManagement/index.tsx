@@ -7,7 +7,7 @@ import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import React from 'react';
 import { useRequest } from 'ahooks';
-import { getShops, postCreateShop } from '@/services/api/shops';
+import { getShops, postCreateShop,deleteShopById,putEditShops } from '@/services/api/shops';
 
 interface Shop {
   id: number;
@@ -38,6 +38,9 @@ export default function ShopsPage() {
   const {run:toCreateShop}=useRequest(postCreateShop,{
     manual:true,
   })
+  const {run:toEditShop}=useRequest(putEditShops,{
+    manual:true,
+  })
 
   const actionRef = React.useRef<ActionType>();
 
@@ -53,26 +56,27 @@ export default function ShopsPage() {
     setModalVisible(true);
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      
-      message.success('删除成功');
-      // 刷新表格
-      actionRef.current?.reload();
-    } catch (error) {
-      console.error('删除失败:', error);
-    }
-  };
+
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       if (editingShop) {
         // await http.put(`/v1/shops/${editingShop.id}`, values);
-        toCreateShop(values)
-        message.success('更新成功');
+        toEditShop({id:editingShop.id,...values}).then((res)=>{
+          if (res.code !== 0) {
+            message.error('更新失败');
+            return;
+          }
+          message.success('更新成功');
+        }).catch(()=>{
+          message.error('更新失败');
+        })
+       
+        
       } else {
         // await http.post('/v1/shops', values);
+        toCreateShop(values)
         message.success('创建成功');
       }
       setModalVisible(false);
@@ -126,7 +130,22 @@ export default function ShopsPage() {
         <a key="edit" onClick={() => handleEdit(record)}>
           编辑
         </a>,
-        <a key="delete" onClick={() => handleDelete(record.id)}>
+        <a key="delete" onClick={() => {
+          Modal.confirm({
+            title: 'warning',
+            content: 'Is it confirmed to delete?',
+            onOk() {
+              deleteShopById({id:record.id}).then(()=>{
+                message.success('删除成功');
+                // 刷新表格
+                actionRef.current?.reload();
+              }).catch(()=>{
+                message.error('删除失败');
+              })
+            }
+          })
+         
+        }}>
           删除
         </a>,
       ],

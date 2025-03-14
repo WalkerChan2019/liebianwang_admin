@@ -34,13 +34,13 @@ export async function getShops(
   });
 }
 
-/** 编辑服务包 PUT /order/manage/service-package */
-export async function putShops(
+
+/** 编辑店铺 PUT /api/v1/shops/:id */
+export async function putEditShops(
   body: {
+    id:number;
     /** 服务包名 */
     packageName: string;
-    /** id(必填） */
-    id: number;
     /** 订阅时长，单位：天 */
     subPeriod: number;
     /** 价格（分） */
@@ -54,8 +54,9 @@ export async function putShops(
   },
   options?: { [key: string]: any },
 ) {
+  const { id } = body;
   return request<{ code: number; msg: string }>(
-    '/api/v1/shops',
+    `/api/v1/shops/${id}`,
     {
       method: 'PUT',
       headers: {
