@@ -8,7 +8,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import React from 'react';
 import { useRequest } from 'ahooks';
 import { getShops, postCreateShop,deleteShopById,putEditShops } from '@/services/api/shops';
-
+import { history } from '@umijs/max';
 interface Shop {
   id: number;
   name: string;
@@ -150,6 +150,9 @@ export default function ShopsPage() {
         }}>
           删除
         </a>,
+         <a key="edit" onClick={() => history.push(`/shop_management/${record.id}/goods`)}>
+          管理商品
+        </a>
       ],
     },
   ];

@@ -7,9 +7,24 @@ export default [
     name: '店铺管理',
     path: '/shop_management',
     icon: 'BookOutlined',
-    component: './ShopsManagement',
+    routes: [
+      {
+        path: '/shop_management',
+        redirect: '/shop_management/list',
+      },
+      {
+        path: '/shop_management/list',
+        component: './ShopsManagement',
+      },
+      {
+        name: '商品管理',
+        path: '/shop_management/:id/goods',
+        hideInMenu: true,
+        component: './ShopsManagement/GoodsManagement',
+      },
+    ],
   },
-  
+
   {
     name: 'User',
     path: '/user',
