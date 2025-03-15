@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-    // 项目凭证
+      ## 项目凭证
         GITHUB_CRED = credentials('f2e774a2-c3e5-477f-bf49-2ca8f0141984')
     }
 
@@ -12,13 +12,13 @@ pipeline {
 
     stages {
         stage('Checkout') {
-          //  拉取代码
+          ## 拉取代码
             steps {
                 git branch: 'main', credentialsId: 'f2e774a2-c3e5-477f-bf49-2ca8f0141984', url: 'https://github.com/WalkerChan2019/liebianwang_admin.git'
             }
         }
 
-//  检查package.json是否有修改 && node_modules是否存在
+## 检查package.json是否有修改 && node_modules是否存在
         stage('Check Dependencies') {
             steps {
                 script {
@@ -28,7 +28,7 @@ pipeline {
             }
         }
 
-//  安装pnpm && 安装依赖 如果Check Dependencies条件判断通过则跳过此步骤
+## 安装pnpm && 安装依赖 如果Check Dependencies条件判断通过则跳过此步骤
         stage('Install pnpm and Dependencies') {
             when {
                 expression { env.PACKAGE_CHANGED != '' || env.NODE_MODULES_EXISTS == 'false' }
@@ -38,20 +38,20 @@ pipeline {
                 sh 'pnpm install'
             }
         }
-//  构建
+## 构建
         stage('Build') {
             steps {
                 sh 'pnpm run build'
             }
         }
-//  压缩
+## 压缩
         stage('compress dist') {
             steps {
                 sh 'tar -czf dist.tar -C dist . || echo "Failed to create dist.tar"'
                 sh 'ls -l dist.tar || echo "dist.tar not found"'
             }
         }
-//  部署云服务器
+## 部署云服务器
         stage('Deploy to Server') {
             steps {
                 sshPublisher(
