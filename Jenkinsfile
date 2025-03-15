@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout') {
           //  拉取代码
             steps {
-                git branch: 'main', credentialsId: 'f2e774a2-c3e5-477f-bf49-2ca8f0141984', url: 'https://github.com/WalkerChan2019/liebianwang_admin.git'
+                git branch: 'master', credentialsId: 'f2e774a2-c3e5-477f-bf49-2ca8f0141984', url: 'https://github.com/WalkerChan2019/liebianwang_admin.git'
             }
         }
 
